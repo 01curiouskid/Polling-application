@@ -9,7 +9,7 @@ const serializeQuestion = (question: PollQuestion): PollQuestionSerialized => ({
 
 interface Store {
   get activeQuestion(): PollQuestion | null;
-  set activeQuestion(value: PollQuestion | null): void;
+  set activeQuestion(value: PollQuestion | null);
   students: Map<string, Student>;
   createPollQuestion: (question: string, options: string[], timeLimit?: number, correctAnswer?: string) => PollQuestion;
   generateId: () => string;
