@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getSocket, disconnectSocket, PollSocket } from '../socket/socket';
+import { getSocket, PollSocket } from '../socket/socket';
 import { ServerToClientEvents } from '../types';
 
 export const useSocket = () => {
