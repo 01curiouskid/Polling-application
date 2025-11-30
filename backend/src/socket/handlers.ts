@@ -78,6 +78,10 @@ export const setupSocketHandlers = (io: Server, store: Store) => {
   io.on('connection', (socket: Socket) => {
     console.log(`Client connected: ${socket.id}`);
 
+    // Send current participants list to all new connections
+    const participants = Array.from(students.values()).map(s => ({ id: s.id, name: s.name }));
+    socket.emit('server:participants_updated', participants);
+
     // Send current question if one exists (for any client that connects)
     // Socket.io will queue the message if handlers aren't ready yet
     const currentQuestion = store.activeQuestion;
@@ -90,6 +94,20 @@ export const setupSocketHandlers = (io: Server, store: Store) => {
         socket.emit('server:timer_tick', secondsRemaining);
       }, 100);
     }
+
+    // Teacher identifies self
+    socket.on('teacher:connect', (callback) => {
+      socket.data.role = 'teacher';
+      console.log(`Teacher connected: ${socket.id}`);
+      callback({ success: true });
+      
+      // Send current participants and history to teacher
+      const participants = Array.from(students.values()).map(s => ({ id: s.id, name: s.name }));
+      socket.emit('server:participants_updated', participants);
+      
+      const history = store.pollHistory.map(q => serializeQuestion(q));
+      socket.emit('teacher:history_response', { success: true, history });
+    });
 
     // Student joins
     socket.on('student:join', (data: { name: string; studentId?: string }, callback) => {

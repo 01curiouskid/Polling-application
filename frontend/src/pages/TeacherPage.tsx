@@ -29,6 +29,13 @@ const TeacherPage = () => {
   useEffect(() => {
     if (!socket) return;
 
+    // Identify as teacher when connected
+    if (isConnected) {
+      socket.emit('teacher:connect', (response: { success: boolean }) => {
+        console.log('Teacher connected:', response);
+      });
+    }
+
     const handleQuestionUpdated = (question: PollQuestion) => {
       setCurrentQuestion(question);
       setResults(question.results);
@@ -67,26 +74,19 @@ const TeacherPage = () => {
       }
     };
 
+    const handleHistoryResponse = (response: { success: boolean; history?: PollQuestion[] }) => {
+      if (response.success && response.history) {
+        setPollHistory(response.history);
+      }
+    };
+
     socket.on('server:question_updated', handleQuestionUpdated);
     socket.on('server:results_updated', handleResultsUpdated);
     socket.on('server:timer_tick', handleTimerTick);
     socket.on('server:question_closed', handleQuestionClosed);
     socket.on('server:participants_updated', handleParticipantsUpdated);
     socket.on('server:chat_message', handleChatMessage);
-
-    // Fetch initial participants and history
-    if (isConnected) {
-      socket.emit('teacher:get_participants', (response) => {
-        if (response.success && response.participants) {
-          setParticipants(response.participants);
-        }
-      });
-      socket.emit('teacher:get_history', (response) => {
-        if (response.success && response.history) {
-          setPollHistory(response.history);
-        }
-      });
-    }
+    socket.on('teacher:history_response', handleHistoryResponse);
 
     return () => {
       socket.off('server:question_updated', handleQuestionUpdated);
@@ -95,8 +95,9 @@ const TeacherPage = () => {
       socket.off('server:question_closed', handleQuestionClosed);
       socket.off('server:participants_updated', handleParticipantsUpdated);
       socket.off('server:chat_message', handleChatMessage);
+      socket.off('teacher:history_response', handleHistoryResponse);
     };
-  }, [socket]);
+  }, [socket, isConnected]);
 
   // Reset unread messages when chat is opened
   useEffect(() => {
