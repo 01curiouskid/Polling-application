@@ -31,9 +31,11 @@ export interface ServerToClientEvents {
   'server:error': (message: string) => void;
   'server:participants_updated': (participants: Array<{ id: string; name: string }>) => void;
   'server:chat_message': (data: { id: string; sender: string; senderId: string; message: string; timestamp: number; isTeacher: boolean }) => void;
+  'teacher:history_response': (response: { success: boolean; history?: PollQuestion[] }) => void;
 }
 
 export interface ClientToServerEvents {
+  'teacher:connect': (callback: (response: { success: boolean }) => void) => void;
   'teacher:create_question': (
     data: { question: string; options: string[]; correctAnswer?: string; timeLimit?: number },
     callback: (response: { success: boolean; question?: PollQuestion; error?: string }) => void
