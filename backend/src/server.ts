@@ -27,6 +27,7 @@ app.get('/health', (req: Request, res: Response) => {
 let activeQuestion: PollQuestion | null = null;
 const students = new Map<string, Student>();
 const pollHistory: PollQuestion[] = []; // Store completed polls
+const currentSessionQuestions: PollQuestion[] = []; // Track questions in current session
 
 // Helper function to generate unique IDs
 const generateId = (): string => {
@@ -64,6 +65,7 @@ const store = {
   generateId,
   io,
   pollHistory,
+  currentSessionQuestions,
 };
 
 setupSocketHandlers(io, store);

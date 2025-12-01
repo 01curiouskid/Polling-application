@@ -15,12 +15,14 @@ interface Store {
   generateId: () => string;
   io: Server;
   pollHistory: PollQuestion[];
+  currentSessionQuestions: PollQuestion[]; // Track questions in current session
 }
 
 export const setupSocketHandlers = (io: Server, store: Store) => {
   const { students, createPollQuestion, generateId } = store;
   let questionTimer: NodeJS.Timeout | null = null;
   let timerInterval: NodeJS.Timeout | null = null;
+  let teacherConnected = false; // Track if teacher is already connected
 
   const startTimer = (question: PollQuestion) => {
     const updateTimer = () => {
@@ -60,6 +62,7 @@ export const setupSocketHandlers = (io: Server, store: Store) => {
         studentAnswers: activeQuestion.studentAnswers ? new Map(activeQuestion.studentAnswers) : new Map(),
       };
       store.pollHistory.push(historyEntry);
+      store.currentSessionQuestions.push(historyEntry); // Also track in current session
       
       store.activeQuestion = null;
       io.emit('server:question_closed');
@@ -101,11 +104,20 @@ export const setupSocketHandlers = (io: Server, store: Store) => {
       console.log(`Teacher connected: ${socket.id}`);
       callback({ success: true });
       
-      // Send current participants and history to teacher
+      // Only clear history if this is a new session (no teacher was connected before)
+      if (!teacherConnected) {
+        console.log('New teacher session - clearing poll history');
+        store.pollHistory.length = 0; // Clear previous session history
+        store.currentSessionQuestions.length = 0; // Reset current session tracking
+        teacherConnected = true;
+      }
+      
+      // Send current participants to teacher
       const participants = Array.from(students.values()).map(s => ({ id: s.id, name: s.name }));
       socket.emit('server:participants_updated', participants);
       
-      const history = store.pollHistory.map(q => serializeQuestion(q));
+      // Send current session history to teacher
+      const history = store.currentSessionQuestions.map(q => serializeQuestion(q));
       socket.emit('teacher:history_response', { success: true, history });
     });
 
@@ -279,7 +291,8 @@ export const setupSocketHandlers = (io: Server, store: Store) => {
     // Teacher gets poll history
     socket.on('teacher:get_history', (callback) => {
       try {
-        const history = store.pollHistory.map(q => serializeQuestion(q));
+        // Only return questions from the current session
+        const history = store.currentSessionQuestions.map(q => serializeQuestion(q));
         callback({ success: true, history });
       } catch (error) {
         callback({ success: false, error: 'Failed to get poll history' });
@@ -295,8 +308,8 @@ export const setupSocketHandlers = (io: Server, store: Store) => {
           return;
         }
 
-        // Get all polls where this student answered
-        const performance = store.pollHistory
+        // Get all polls from current session where this student answered
+        const performance = store.currentSessionQuestions
           .filter(q => q.answeredBy.has(studentId))
           .map(q => {
             const serialized = serializeQuestion(q);
@@ -417,6 +430,10 @@ export const setupSocketHandlers = (io: Server, store: Store) => {
         const participants = Array.from(students.values()).map(s => ({ id: s.id, name: s.name }));
         store.io.emit('server:participants_updated', participants);
         console.log(`Student disconnected: ${studentId}`);
+      } else if (socket.data.role === 'teacher') {
+        // Teacher disconnected - reset the connection flag
+        teacherConnected = false;
+        console.log(`Teacher disconnected: ${socket.id}`);
       } else {
         console.log(`Client disconnected: ${socket.id}`);
       }
