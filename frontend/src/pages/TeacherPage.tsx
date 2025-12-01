@@ -80,12 +80,17 @@ const TeacherPage = () => {
       }
     };
 
+    const handleConnect = () => {
+      setPollHistory([]); // Clear previous history for new session
+    };
+
     socket.on('server:question_updated', handleQuestionUpdated);
     socket.on('server:results_updated', handleResultsUpdated);
     socket.on('server:timer_tick', handleTimerTick);
     socket.on('server:question_closed', handleQuestionClosed);
     socket.on('server:participants_updated', handleParticipantsUpdated);
     socket.on('server:chat_message', handleChatMessage);
+    socket.on('connect', handleConnect);
     socket.on('teacher:history_response', handleHistoryResponse);
 
     return () => {
@@ -95,6 +100,7 @@ const TeacherPage = () => {
       socket.off('server:question_closed', handleQuestionClosed);
       socket.off('server:participants_updated', handleParticipantsUpdated);
       socket.off('server:chat_message', handleChatMessage);
+      socket.off('connect', handleConnect);
       socket.off('teacher:history_response', handleHistoryResponse);
     };
   }, [socket, isConnected]);
@@ -105,6 +111,17 @@ const TeacherPage = () => {
       setUnreadMessages(0);
     }
   }, [showChat]);
+
+  const handleViewHistory = () => {
+    if (socket && isConnected) {
+      socket.emit('teacher:get_history', (response) => {
+        if (response.success && response.history) {
+          setPollHistory(response.history);
+          setShowHistory(true);
+        }
+      });
+    }
+  };
 
   const handleAddOption = () => {
     setOptions([...options, '']);
@@ -235,7 +252,7 @@ const TeacherPage = () => {
       {/* Action Buttons */}
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', justifyContent: 'flex-end' }}>
         <button
-          onClick={() => setShowHistory(true)}
+          onClick={handleViewHistory}
           style={{
             padding: '0.5rem 1rem',
             backgroundColor: 'white',
