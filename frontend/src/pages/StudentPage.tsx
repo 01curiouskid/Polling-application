@@ -444,57 +444,21 @@ const StudentPage = () => {
           borderRadius: 'var(--radius-lg)',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         }}>
-          <div style={{ marginBottom: '1rem', fontWeight: '600', fontSize: 'var(--font-size-base)' }}>
-            Question
-          </div>
-          <div style={{
-            backgroundColor: '#374151',
-            color: 'white',
-            padding: '1rem',
-            borderRadius: 'var(--radius-md)',
-            marginBottom: '1.5rem',
-            fontSize: 'var(--font-size-base)',
-          }}>
-            {currentQuestion.question}
-          </div>
-
-          {/* Timer display during answering */}
-          {timer !== null && timer > 0 && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '1.5rem',
-              padding: '0.75rem',
-              backgroundColor: timer <= 10 ? '#FEE2E2' : '#F3F4F6',
-              borderRadius: 'var(--radius-md)',
-              border: timer <= 10 ? '2px solid #EF4444' : '1px solid #E5E7EB',
-            }}>
+          <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ fontSize: 'var(--font-size-2xl)' }}>{currentQuestion.question}</h2>
+            {timer !== null && (
               <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: timer < 10 ? 'var(--danger-color)' : 'var(--primary-color)',
+                color: 'white',
+                borderRadius: 'var(--radius-md)',
                 fontSize: 'var(--font-size-lg)',
                 fontWeight: '600',
-                color: timer <= 10 ? '#EF4444' : '#374151',
               }}>
-                <span style={{
-                  fontSize: '1.25rem',
-                }}>⏱️</span>
-                <span>{timer}s remaining</span>
+                {timer}s
               </div>
-              {timer <= 10 && (
-                <div style={{
-                  fontSize: 'var(--font-size-sm)',
-                  color: '#EF4444',
-                  fontWeight: '500',
-                  marginLeft: '0.5rem',
-                }}>
-                  Hurry up!
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
             {currentQuestion.options.map((option, index) => (
