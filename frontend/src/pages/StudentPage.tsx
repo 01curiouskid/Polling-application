@@ -458,6 +458,44 @@ const StudentPage = () => {
             {currentQuestion.question}
           </div>
 
+          {/* Timer display during answering */}
+          {timer !== null && timer > 0 && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '1.5rem',
+              padding: '0.75rem',
+              backgroundColor: timer <= 10 ? '#FEE2E2' : '#F3F4F6',
+              borderRadius: 'var(--radius-md)',
+              border: timer <= 10 ? '2px solid #EF4444' : '1px solid #E5E7EB',
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: 'var(--font-size-lg)',
+                fontWeight: '600',
+                color: timer <= 10 ? '#EF4444' : '#374151',
+              }}>
+                <span style={{
+                  fontSize: '1.25rem',
+                }}>⏱️</span>
+                <span>{timer}s remaining</span>
+              </div>
+              {timer <= 10 && (
+                <div style={{
+                  fontSize: 'var(--font-size-sm)',
+                  color: '#EF4444',
+                  fontWeight: '500',
+                  marginLeft: '0.5rem',
+                }}>
+                  Hurry up!
+                </div>
+              )}
+            </div>
+          )}
+
           <div style={{ marginBottom: '1.5rem' }}>
             {currentQuestion.options.map((option, index) => (
               <label
