@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './styles/global.css';
+import ConnectionStatus from './components/ConnectionStatus';
 import TeacherPage from './pages/TeacherPage';
 import StudentPage from './pages/StudentPage';
 import HomePage from './pages/HomePage';
@@ -8,6 +9,7 @@ import KickedOutPage from './pages/KickedOutPage';
 function App() {
   return (
     <BrowserRouter>
+      <ConnectionStatus />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/teacher" element={<TeacherPage />} />
