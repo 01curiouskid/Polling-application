@@ -11,17 +11,20 @@ export const useSocket = () => {
     setSocket(socketInstance);
     setIsConnected(socketInstance.connected);
 
-    socketInstance.on('connect', () => {
+    function onConnect() {
       setIsConnected(true);
-    });
+    }
 
-    socketInstance.on('disconnect', () => {
+    function onDisconnect() {
       setIsConnected(false);
-    });
+    }
+
+    socketInstance.on('connect', onConnect);
+    socketInstance.on('disconnect', onDisconnect);
 
     return () => {
-      socketInstance.off('connect');
-      socketInstance.off('disconnect');
+      socketInstance.off('connect', onConnect);
+      socketInstance.off('disconnect', onDisconnect);
     };
   }, []);
 
